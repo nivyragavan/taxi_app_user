@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
                 ResponsiveBreakpoint.resize(1000, name: DESKTOP),
               ],
             ),
-        title: 'User App',
+        title: 'Taxi User App',
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
