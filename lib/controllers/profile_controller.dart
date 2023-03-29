@@ -10,6 +10,8 @@ class ProfileController extends GetxController {
   var isLoading = true.obs;
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+
 
   @override
   void onInit() {
@@ -23,8 +25,9 @@ class ProfileController extends GetxController {
       var profileInfo = await APIService().fetchProfile();
       if (profileInfo != null) {
         getProfileInfo.assign(profileInfo);
-        nameController.text = getProfileInfo[0].body!.userData!.name!;
-        phoneController.text = getProfileInfo[0].body!.userData!.contact!;
+        nameController.text = getProfileInfo[0].body!.name!;
+        phoneController.text = getProfileInfo[0].body!.contact!;
+        emailController.text = getProfileInfo[0].body!.email!;
       }
     } finally {
       isLoading(false);

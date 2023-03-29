@@ -4,11 +4,9 @@
 
 import 'dart:convert';
 
-GetProfileModel getProfileModelFromJson(String str) =>
-    GetProfileModel.fromJson(json.decode(str));
+GetProfileModel getProfileModelFromJson(String str) => GetProfileModel.fromJson(json.decode(str));
 
-String getProfileModelToJson(GetProfileModel data) =>
-    json.encode(data.toJson());
+String getProfileModelToJson(GetProfileModel data) => json.encode(data.toJson());
 
 class GetProfileModel {
   GetProfileModel({
@@ -23,86 +21,49 @@ class GetProfileModel {
   String? message;
   Body? body;
 
-  factory GetProfileModel.fromJson(Map<String, dynamic> json) =>
-      GetProfileModel(
-        statusCode: json["statusCode"],
-        code: json["code"],
-        message: json["message"],
-        body: Body.fromJson(json["body"]),
-      );
+  factory GetProfileModel.fromJson(Map<String, dynamic> json) => GetProfileModel(
+    statusCode: json["statusCode"],
+    code: json["code"],
+    message: json["message"],
+    body: Body.fromJson(json["body"]),
+  );
 
   Map<String, dynamic> toJson() => {
-        "statusCode": statusCode,
-        "code": code,
-        "message": message,
-        "body": body!.toJson(),
-      };
+    "statusCode": statusCode,
+    "code": code,
+    "message": message,
+    "body": body!.toJson(),
+  };
 }
 
 class Body {
   Body({
-    this.userId,
-    this.userData,
-  });
-
-  String? userId;
-  UserData? userData;
-
-  factory Body.fromJson(Map<String, dynamic> json) => Body(
-        userId: json["userId"],
-        userData: UserData.fromJson(json["userData"]),
-      );
-
-  Map<String, dynamic> toJson() => {
-        "userId": userId,
-        "userData": userData!.toJson(),
-      };
-}
-
-class UserData {
-  UserData({
+    this.id,
     this.name,
     this.email,
+    this.location,
     this.contact,
-    this.gender,
-    this.dob,
-    this.wallet,
-    this.userId,
-    this.referral,
-    this.createdAt,
   });
 
+  int? id;
   String? name;
   String? email;
+  dynamic location;
   String? contact;
-  dynamic gender;
-  dynamic dob;
-  int? wallet;
-  String? userId;
-  String? referral;
-  DateTime? createdAt;
 
-  factory UserData.fromJson(Map<String, dynamic> json) => UserData(
-        name: json["name"],
-        email: json["email"],
-        contact: json["contact"],
-        gender: json["gender"],
-        dob: json["dob"],
-        wallet: json["wallet"],
-        userId: json["user_id"],
-        referral: json["referral"],
-        createdAt: DateTime.parse(json["created_at"]),
-      );
+  factory Body.fromJson(Map<String, dynamic> json) => Body(
+    id: json["id"],
+    name: json["name"],
+    email: json["email"],
+    location: json["location"],
+    contact: json["contact"],
+  );
 
   Map<String, dynamic> toJson() => {
-        "name": name,
-        "email": email,
-        "contact": contact,
-        "gender": gender,
-        "dob": dob,
-        "wallet": wallet,
-        "user_id": userId,
-        "referral": referral,
-        "created_at": createdAt!.toIso8601String(),
-      };
+    "id": id,
+    "name": name,
+    "email": email,
+    "location": location,
+    "contact": contact,
+  };
 }

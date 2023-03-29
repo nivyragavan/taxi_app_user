@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:taxi_user_app/models/direction_model.dart';
 
 import '../../constants/colors.dart';
+import '../../data_handler/app_data.dart';
+import '../../services/service_methods.dart';
 import '../../widgets/appbar_widget.dart';
 import 'confirm_tour_screen.dart';
 
@@ -13,29 +20,74 @@ class TourPackageScreen extends StatefulWidget {
 }
 
 class _TourPackageScreenState extends State<TourPackageScreen> {
-  int selectedValue = 0;
 
-  DateTime _dateTime = DateTime(25, 03, 2022, 6, 51);
+  final leaveDate = TextEditingController();
+  final returnDate = TextEditingController();
+
+  DirectionModel? directionModel;
+
+  @override
+  void initState() {
+    super.initState();
+    getPlaceDirection();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const AppbarWidget(title: 'Tour Package'),
-      body: Padding(
-        padding: const EdgeInsets.all(10),
-        child: ListView(
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        child: Stack(
           children: [
-            Column(
-              children: [
-                const SizedBox(height: 30),
-                buildSearchAddress(),
-                const SizedBox(height: 30),
-                buildDateTime(),
-                const SizedBox(height: 30),
-                buildSedan(),
-                buildHatchBack(),
-                buildXuv()
-              ],
+            SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 30),
+                    buildSearchAddress(),
+                    const SizedBox(height: 30),
+                    buildLeaveOnDateTime(),
+                    const SizedBox(height: 10),
+                    buildReturnByDateTime(),
+                    const SizedBox(height: 30),
+                    buildSedan(),
+                    buildHatchBack(),
+                    buildXuv()
+                  ],
+                ),
+              ),
             ),
+            Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  width: Get.width,
+                  height: 70,
+                  color: blueGreen.withOpacity(0.4),
+                  alignment: Alignment.centerLeft,
+                  padding: EdgeInsets.only(left: 30,right: 30),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      RichText(
+                          text: TextSpan(
+                              text: directionModel != null
+                                  ? '${directionModel!.durationText}'
+                                  : 'Duration',style: TextStyle(fontSize: 25,color: Colors.red,letterSpacing: 1),children: [
+                            TextSpan(
+                                text: directionModel != null
+                                    ? ' (${directionModel!.distanceText})'
+                                    : 'Distance',style: TextStyle(fontSize: 25,color: Colors.black,letterSpacing: 1)
+                            )
+                          ])),
+                      FaIcon(FontAwesomeIcons.route,size: 30,)
+                    ],
+                  ),
+                ))
           ],
         ),
       ),
@@ -44,14 +96,47 @@ class _TourPackageScreenState extends State<TourPackageScreen> {
 
   buildSearchAddress() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      TextField(
-        cursorColor: blueGreen,
-        decoration: InputDecoration(
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
-            focusedBorder:
-                OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
-            hintText: 'OOTY',
-            hintStyle: const TextStyle(fontSize: 17)),
+      Card(
+        color: Colors.grey.shade200,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: Colors.grey)),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              ListTile(
+                leading: Icon(
+                  Icons.my_location,
+                  color: Colors.indigo,
+                ),
+                title: Text(
+                  Provider.of<AppData>(context, listen: false)
+                      .pickupAddress
+                      ?.placeName ??
+                      'Choose Pickup Location',
+                  style: TextStyle(fontSize: 20, letterSpacing: 1, height: 1.5),
+                ),
+              ),
+              Divider(
+                thickness: 2,
+              ),
+              ListTile(
+                leading: Icon(
+                  Icons.location_on,
+                  color: Colors.red,
+                ),
+                title: Text(
+                  Provider.of<AppData>(context, listen: false)
+                      .dropAddress
+                      ?.placeName ??
+                      'Choose Drop Location',
+                  style: TextStyle(fontSize: 20, letterSpacing: 1, height: 1.5),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
       const SizedBox(height: 30),
       const Text(
@@ -61,95 +146,132 @@ class _TourPackageScreenState extends State<TourPackageScreen> {
     ]);
   }
 
-  buildDateTime() {
-    final hours = _dateTime.hour.toString().padLeft(2, '0');
-    final minutes = _dateTime.minute.toString().padLeft(2, '0');
-    return Column(
-      children: [
-        Container(
-          width: MediaQuery.of(context).size.width,
-          height: 60,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(5),
-              color: blueGreen.withOpacity(0.2)),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(left: 10),
-                child: Text(
-                  'Leave On',
-                  style: TextStyle(fontSize: 20),
-                ),
-              ),
-              TextButton(
-                  onPressed: () {
-                    pickDateTime();
-                  },
-                  child: Text(
-                    '${_dateTime.day}/${_dateTime.month}/${_dateTime.year} $hours:$minutes',
-                    style: TextStyle(fontSize: 20, color: blueGreen),
-                  ))
-            ],
+
+  buildLeaveOnDateTime() {
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      height: 60,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(5),
+          color: blueGreen.withOpacity(0.2)),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(left: 10),
+            child: Text(
+              'Leave On',
+              style: TextStyle(fontSize: 20),
+            ),
           ),
-        ),
-        const SizedBox(height: 20),
-        Container(
-          width: MediaQuery.of(context).size.width,
-          height: 60,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(5),
-              color: blueGreen.withOpacity(0.2)),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(left: 10),
-                child: Text(
-                  'Return By',
-                  style: TextStyle(fontSize: 20),
-                ),
-              ),
-              TextButton(
-                  onPressed: () {
-                    pickDateTime();
-                  },
-                  child: Text(
-                    '${_dateTime.day}/${_dateTime.month}/${_dateTime.year} $hours:$minutes',
-                    style: TextStyle(fontSize: 20, color: blueGreen),
-                  ))
-            ],
-          ),
-        ),
-      ],
+          Expanded(
+            child: TextFormField(
+                controller: leaveDate,
+                textAlign: TextAlign.right,
+                style: TextStyle(fontSize: 20),
+                decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.all(10),
+                    border: InputBorder.none,
+                    hintText: 'Enter leaving date'),
+                readOnly: true,
+                onTap: () async {
+                  DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2000),
+                      //DateTime.now() - not to allow to choose before today.
+                      lastDate: DateTime(2101));
+                  if (pickedDate != null) {
+                    print(
+                        pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
+                    String formattedDate =
+                    DateFormat('dd-MM-yyyy').format(pickedDate);
+                    print(
+                        formattedDate); //formatted date output using intl package =>  2021-03-16
+                    //you can implement different kind of Date Format here according to your requirement
+
+                    setState(() {
+                      leaveDate.text =
+                          formattedDate; //set output date to TextField value.
+                    });
+                  } else {
+                    print("Date is not selected");
+                  }
+                },
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Enter a valid leaving date';
+                  }
+                  return null;
+                }),
+          )
+        ],
+      ),
     );
   }
 
-  Future pickDateTime() async {
-    DateTime? date = await pickDate();
-    if (date == null) return;
+  buildReturnByDateTime() {
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      height: 60,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(5),
+          color: blueGreen.withOpacity(0.2)),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(left: 10),
+            child: Text(
+              'Return By',
+              style: TextStyle(fontSize: 20),
+            ),
+          ),
+          Expanded(
+            child: TextFormField(
+                controller: returnDate,
+                textAlign: TextAlign.right,
+                style: TextStyle(fontSize: 20),
+                decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.all(10),
+                    border: InputBorder.none,
+                    hintText: 'Enter return date'),
+                readOnly: true,
+                onTap: () async {
+                  DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2000),
+                      //DateTime.now() - not to allow to choose before today.
+                      lastDate: DateTime(2101));
+                  if (pickedDate != null) {
+                    print(
+                        pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
+                    String formattedDate =
+                    DateFormat('dd-MM-yyyy').format(pickedDate);
+                    print(
+                        formattedDate); //formatted date output using intl package =>  2021-03-16
+                    //you can implement different kind of Date Format here according to your requirement
 
-    TimeOfDay? time = await pickTime();
-    if (time == null) return;
-
-    final dateTime =
-        DateTime(date.day, date.month, date.year, time.hour, time.minute);
-
-    setState(() {
-      this._dateTime = dateTime;
-    });
+                    setState(() {
+                      returnDate.text =
+                          formattedDate; //set output date to TextField value.
+                    });
+                  } else {
+                    print("Date is not selected");
+                  }
+                },
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Enter a valid return date';
+                  }
+                  return null;
+                }),
+          )
+        ],
+      ),
+    );
   }
-
-  Future<DateTime?> pickDate() => showDatePicker(
-      context: context,
-      initialDate: _dateTime,
-      firstDate: DateTime(2021),
-      lastDate: DateTime(2100));
-
-  Future<TimeOfDay?> pickTime() => showTimePicker(
-        context: context,
-        initialTime: TimeOfDay(hour: _dateTime.hour, minute: _dateTime.minute),
-      );
 
   buildSedan() {
     return ListTile(
@@ -210,5 +332,27 @@ class _TourPackageScreenState extends State<TourPackageScreen> {
       ),
       onTap: () {},
     );
+  }
+
+
+  Future<void> getPlaceDirection() async {
+    ///to get the direction
+
+    var initialPosition =
+        Provider.of<AppData>(context, listen: false).pickupAddress;
+    var finalPosition =
+        Provider.of<AppData>(context, listen: false).dropAddress;
+
+    var pickupLatLng =
+    LatLng(initialPosition!.latitude!, initialPosition.longitude!);
+    var dropLatLng = LatLng(finalPosition!.latitude!, finalPosition.longitude!);
+
+    var details = await ServiceMethods()
+        .obtainPlaceDirectionDetails(pickupLatLng, dropLatLng);
+    print("This is your encoded points :: ${details!.encodedPoints}");
+
+    setState(() {
+      directionModel = details;
+    });
   }
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
+import 'package:provider/provider.dart';
+import 'package:taxi_user_app/view/in_progress_screen.dart';
 import '../../constants/colors.dart';
+import '../../data_handler/app_data.dart';
 import '../../widgets/appbar_widget.dart';
 import '../confirmed_screen.dart';
 
@@ -15,7 +17,7 @@ class ConfirmRoundTripBookingScreen extends StatefulWidget {
 
 class _ConfirmOneWayBookingScreenState
     extends State<ConfirmRoundTripBookingScreen> {
-  int selectedValue = 0;
+  int selectedValue = 1;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,15 +26,19 @@ class _ConfirmOneWayBookingScreenState
         padding: const EdgeInsets.all(15),
         child: ListView(
           children: [
-            const Text(
-              'Address',
+             Text(
+              Provider.of<AppData>(context, listen: false)
+                  .pickupAddress
+                  ?.placeName ??'Pickup Location',
               style: TextStyle(fontSize: 17),
             ),
             const SizedBox(
               height: 20,
             ),
-            const Text(
-              'Place',
+             Text(
+              Provider.of<AppData>(context, listen: false)
+                  .dropAddress
+                  ?.placeName ??'Drop Location',
               style: TextStyle(fontSize: 17),
             ),
             const SizedBox(
@@ -64,7 +70,7 @@ class _ConfirmOneWayBookingScreenState
                   const Padding(
                     padding: EdgeInsets.only(right: 10),
                     child: Text(
-                      'Hatchback',
+                      'Mini',
                       style: TextStyle(fontSize: 17),
                     ),
                   ),
@@ -237,140 +243,53 @@ class _ConfirmOneWayBookingScreenState
             ),
             const SizedBox(height: 5),
             const Divider(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                TextButton(
-                    onPressed: () {
-                      Get.bottomSheet(buildBottomSheet());
-                    },
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.payments_outlined, color: blueGreen),
-                            const SizedBox(width: 15),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Cash',
-                                  style: TextStyle(
-                                      color: blueGreen,
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 20),
-                                ),
-                                const Text(
-                                  'Payment Method',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 17,
-                                      color: Colors.black54),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 10),
-                            const Icon(
-                              Icons.keyboard_arrow_down_outlined,
-                              color: Colors.black54,
-                              size: 40,
-                            )
-                          ],
-                        )
-                      ],
-                    )),
-                TextButton(
-                    onPressed: () {},
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.local_offer_outlined, color: blueGreen),
-                            const SizedBox(width: 15),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Coupons',
-                                  style: TextStyle(
-                                      color: blueGreen,
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 20),
-                                ),
-                                const Text(
-                                  'Apply Coupon',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 17,
-                                      color: Colors.black54),
-                                ),
-                              ],
-                            ),
-                          ],
+            Container(
+              height: 40,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: RadioListTile(
+                        value: 1,
+                        groupValue: selectedValue,
+                        activeColor: blueGreen,
+                        title: const Text(
+                          'Viswa Wallet',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w500),
                         ),
-                      ],
-                    ))
-              ],
+                        onChanged: (value) => setState(() => selectedValue = 1)),
+                  ),
+                  Expanded(
+                    child: RadioListTile(
+                        value: 2,
+                        groupValue: selectedValue,
+                        activeColor: blueGreen,
+                        title: const Text(
+                          'Cash',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w500),
+                        ),
+                        onChanged: (value) => setState(() => selectedValue = 2)),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 30),
-            Center(
-              child: ElevatedButton(
-                  onPressed: () {
-                    Get.to(const ConfirmedScreen());
-                  },
-                  style: ElevatedButton.styleFrom(
-                      primary: black, padding: const EdgeInsets.all(10)),
-                  child: const Text(
-                    'Confirm Booking',
-                    style: TextStyle(fontSize: 20),
-                  )),
-            ),
+            ElevatedButton(
+                onPressed: () {
+                  Get.to(const InProgressScreen());
+                },
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: black, padding: const EdgeInsets.all(10),
+                fixedSize: Size(double.infinity, 60),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50))
+                ),
+                child: const Text(
+                  'Confirm Booking',
+                  style: TextStyle(fontSize: 23,letterSpacing:1,color: Colors.white),
+                )),
           ],
         ),
-      ),
-    );
-  }
-
-  buildBottomSheet() {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.25,
-      color: Colors.white,
-      child: Column(
-        children: [
-          const SizedBox(height: 20),
-          Text(
-            'Payment Method',
-            style: TextStyle(
-                color: blueGreen, fontSize: 20, fontWeight: FontWeight.w500),
-          ),
-          const SizedBox(height: 10),
-          RadioListTile(
-              value: 1,
-              groupValue: selectedValue,
-              activeColor: blueGreen,
-              title: const Text(
-                'Bookit Wallet',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-              ),
-              onChanged: (value) => setState(() => selectedValue = 1)),
-          RadioListTile(
-              value: 2,
-              groupValue: selectedValue,
-              activeColor: blueGreen,
-              title: const Text(
-                'Cash',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-              ),
-              onChanged: (value) => setState(() => selectedValue = 2)),
-          ElevatedButton(
-              onPressed: () {
-                Get.back();
-              },
-              style: ElevatedButton.styleFrom(
-                  primary: black, padding: const EdgeInsets.all(10)),
-              child: const Text('Continue',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)))
-        ],
       ),
     );
   }

@@ -89,7 +89,7 @@ class OnboardingScreen extends StatelessWidget {
                       return Text(
                         _controller.isLastPage ? 'Start' : 'Next',
                         style: const TextStyle(
-                            fontWeight: FontWeight.w500, fontSize: 20),
+                            fontWeight: FontWeight.w500, fontSize: 20, color: Colors.white),
                       );
                     })))
           ],

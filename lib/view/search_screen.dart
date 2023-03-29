@@ -1,33 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import '../constants/colors.dart';
+import 'package:taxi_user_app/constants/colors.dart';
+import 'package:taxi_user_app/widgets/drawer_widget.dart';
+
 import '../data_handler/app_data.dart';
 import '../models/address_model.dart';
 import '../models/place_prediction_model.dart';
 import '../services/location_service.dart';
-import '../widgets/appbar_widget.dart';
 
-class DropLocationScreen extends StatefulWidget {
-  const DropLocationScreen({Key? key}) : super(key: key);
+class SearchScreen extends StatefulWidget {
+  const SearchScreen({Key? key}) : super(key: key);
 
   @override
-  State<DropLocationScreen> createState() => _DropLocationScreenState();
+  State<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _DropLocationScreenState extends State<DropLocationScreen> {
+class _SearchScreenState extends State<SearchScreen> {
   final dropLocationController = TextEditingController();
-
   List<PlacePredictionModel> placePrediction = [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppbarWidget(title: 'Choose Drop Off Location'),
         body: SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(15),
-        child: Column(
+          child: Padding(
+      padding: const EdgeInsets.all(15),
+      child: Column(
           children: [
             TextField(
               controller: dropLocationController,
@@ -38,14 +37,17 @@ class _DropLocationScreenState extends State<DropLocationScreen> {
                     Icons.search,
                     color: Colors.black,
                   ),
-                  border: OutlineInputBorder(
-                      borderSide: BorderSide(color: black),
-                      borderRadius: BorderRadius.circular(50)),
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: black),
+                  borderRadius: BorderRadius.circular(50)
+                ),
                   focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: black),
-                      borderRadius: BorderRadius.circular(50)),
-                  filled: true,
-                  fillColor: blueGreen.withOpacity(0.4)),
+                      borderRadius: BorderRadius.circular(50)
+                  ),
+              filled: true,
+                fillColor: blueGreen.withOpacity(0.4)
+              ),
               onChanged: (value) {
                 findPlace(value);
               },
@@ -74,9 +76,9 @@ class _DropLocationScreenState extends State<DropLocationScreen> {
                     },
                   )
           ],
-        ),
       ),
-    ));
+    ),
+        ));
   }
 
   ///get place list on type

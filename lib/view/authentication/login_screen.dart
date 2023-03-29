@@ -1,143 +1,199 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:taxi_user_app/constants/colors.dart';
+import 'package:taxi_user_app/view/authentication/register_screen.dart';
+import 'package:taxi_user_app/view/home_screen.dart';
 
-import '../../constants/colors.dart';
-import 'otp_screen.dart';
+import '../../services/apiservice.dart';
+
+
 
 class LoginScreen extends StatefulWidget {
-  LoginScreen({Key? key}) : super(key: key);
-  static String verify = "";
+   LoginScreen({Key? key}) : super(key: key);
+
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+
   final box = GetStorage();
 
-  TextEditingController phoneNumber = TextEditingController();
-  TextEditingController countryCode = TextEditingController();
+  final formKey = GlobalKey<FormState>();
 
-  @override
-  void initState() {
-    countryCode.text = "+91";
-    super.initState();
-  }
+  final contact = TextEditingController();
+
+  final password = TextEditingController();
+
+  ButtonState state = ButtonState.init;
+
+  bool isLoading = false;
+
+  bool isAnimating = true;
 
   @override
   Widget build(BuildContext context) {
+    final isDone = state == ButtonState.done;
+    final isStretched = isAnimating || state == ButtonState.init;
     return Scaffold(
-        body: Center(
-      child: SingleChildScrollView(
-        child: Column(children: [
-          buildImageContainer(),
-          const SizedBox(height: 20),
-          buildLoginText(),
-          const SizedBox(height: 20),
-          buildLogin(context),
-        ]),
-      ),
-    ));
-  }
-
-  buildImageContainer() {
-    return Container(
-      width: 300,
-      height: 300,
-      child: Image.asset(
-        "assets/icons/vlogo.png",
-        fit: BoxFit.fill,
-      ),
-    );
-  }
-
-  buildLoginText() {
-    return Text(
-      "Login To Start Your Ride",
-      style: TextStyle(
-          color: blueGreen,
-          fontSize: 30,
-          letterSpacing: 1,
-          fontWeight: FontWeight.w500),
-    );
-  }
-
-  buildLogin(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(15),
-      child: Column(
-        children: [
-          Container(
-            height: 60,
-            decoration: BoxDecoration(
-                border: Border.all(width: 1, color: Colors.grey),
-                borderRadius: BorderRadius.circular(5)),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 10,
-                ),
-                SizedBox(
-                  width: 40,
-                  child: TextField(
-                    controller: countryCode,
-                    keyboardType: TextInputType.number,
+        body: Padding(
+          padding: const EdgeInsets.all(10),
+          child: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                children: [
+                  const SizedBox(height: 50),
+                  SizedBox(
+                      width: 600,
+                      height: 400,
+                      child: Image.asset('assets/icons/vlogo.png')),
+                  const Text(
+                    'LOGIN TO CONTINUE',
+                    style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 3),
+                  ),
+                  SizedBox(height: 40),
+                  TextFormField(
+                    controller: contact,
+                    cursorColor: blueGreen,
+                    keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
-                      border: InputBorder.none,
-                    ),
+                       // contentPadding: const EdgeInsets.all(10),
+                        hintText: 'Enter your Phone Number',
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5)),
+                        focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: blueGreen, width: 2))),
+                    validator: (value) {
+                      if (value?.length != 10) {
+                        return "Enter registered phone number";
+                      }
+                    },
                   ),
-                ),
-                Text(
-                  "|",
-                  style: TextStyle(fontSize: 33, color: Colors.grey),
-                ),
-                SizedBox(
-                  width: 10,
-                ),
-                Expanded(
-                    child: TextField(
-                  controller: phoneNumber,
-                  keyboardType: TextInputType.phone,
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: "Enter your phone number",
+                  const SizedBox(height: 30),
+                  TextFormField(
+                    controller: password,
+                    cursorColor: blueGreen,
+                    decoration: InputDecoration(
+                      //  contentPadding: const EdgeInsets.all(10),
+                        hintText: 'Enter your password',
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5)),
+                        focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: blueGreen, width: 2))),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return "Enter your password";
+                      }
+                    },
                   ),
-                ))
-              ],
+                  const SizedBox(height: 25),
+                  AnimatedContainer(
+                    width: state == ButtonState.init ? 300 : 70,
+                    height: 50,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeIn,
+                    onEnd: () =>
+                        setState(() =>
+                        isAnimating = !isAnimating
+                        ),
+                    child: isStretched
+                        ? ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: blueGreen,),
+                        onPressed: () async {
+                          if (formKey.currentState!.validate()) {
+                            setState(() {
+                              state = ButtonState.loading;
+                            });
+                            await Future.delayed(const Duration(seconds: 3));
+                            setState(() {
+                              state = ButtonState.done;
+                            });
+                            await Future.delayed(const Duration(seconds: 3));
+                            setState(() {
+                              state = ButtonState.init;
+                            });
+                            var data = await APIService().userLogin(contact.text, password.text);
+                            if (data["statusCode"] == 1) {
+                              box.write('userId', data['body']['userId']);
+                              print(data['body']['userId']);
+                              print('success');
+                              Fluttertoast.showToast(
+                                  msg: 'LoggedIn Successfully');
+                              Get.to(HomeScreen());
+                            } else {
+                              Fluttertoast.showToast(msg: '${data["message"]}');
+                            }
+                          }
+                        },
+                        // onPressed: (){
+                        //   Get.to(HomeScreen());
+                        // },
+                        child: const Text(
+                          'LOGIN',
+                          style: TextStyle(
+                              fontSize: 25,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 2),
+                        ))
+                        : buildSmallButton(isDone),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('Don\'t have an account?',
+                          style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 2)),
+                      TextButton(
+                        onPressed: () {
+                          Get.to( RegisterScreen());
+                        },
+                        child:  Text('Register',
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: blueGreen,
+                                letterSpacing: 2)),
+                      ),
+                    ],
+                  )
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 50),
-          ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: blueGreen),
-              onPressed: () async {
-                await FirebaseAuth.instance.verifyPhoneNumber(
-                  phoneNumber: countryCode.text + phoneNumber.text,
-                  verificationCompleted: (PhoneAuthCredential credential) {},
-                  verificationFailed: (FirebaseAuthException e) {},
-                  codeSent: (String verificationId, int? resendToken) {
-                    LoginScreen.verify = verificationId;
-                    Fluttertoast.showToast(msg: 'Verification code send');
-                    Get.to(const VerifyOTPScreen());
-                  },
-                  codeAutoRetrievalTimeout: (String verificationId) {},
-                );
+        )
+    );
+  }
 
-              },
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: 60,
-                child: const Center(
-                  child: Text(
-                    'Login',
-                    style: TextStyle(
-                        fontSize: 25, letterSpacing: 2, color: Colors.white),
-                  ),
-                ),
-              ))
-        ],
+  buildSmallButton(bool isDone) {
+    return CircleAvatar(
+      radius: 30,
+      backgroundColor: isDone ? Colors.green : blueGreen,
+      child: Center(
+        child: isDone
+            ? const Icon(
+          Icons.done,
+          size: 40,
+          color: Colors.white,
+        )
+            : const CircularProgressIndicator(
+          color: Colors.white,
+        ),
       ),
     );
   }

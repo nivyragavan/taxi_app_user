@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../constants/colors.dart';
-import '../models/get_profile_model.dart';
-import '../services/apiservice.dart';
 import '../view/authentication/login_screen.dart';
 import '../view/booking_history_screen.dart';
 import '../view/home_screen.dart';
@@ -23,6 +20,8 @@ class DrawerWidget extends StatefulWidget {
 }
 
 class _DrawerWidgetState extends State<DrawerWidget> {
+
+  bool activePage0 = false;
   bool activePage1 = false;
   bool activePage2 = false;
   bool activePage3 = false;
@@ -31,30 +30,31 @@ class _DrawerWidgetState extends State<DrawerWidget> {
   bool activePage6 = false;
   bool activePage7 = false;
 
-  GetProfileModel? getProfileModel;
-
-  var isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    getData();
-  }
-
-  getData() async {
-    getProfileModel = await APIService().fetchProfile();
-    if (getProfileModel != null) {
-      setState(() {
-        isLoading = true;
-      });
-    }
-  }
+  // GetProfileModel? getProfileModel;
+  //
+  // var isLoading = false;
+  //
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   getData();
+  // }
+  //
+  // getData() async {
+  //   getProfileModel = await APIService().fetchProfile();
+  //   if (getProfileModel != null) {
+  //     setState(() {
+  //       isLoading = true;
+  //     });
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.75,
+      width: MediaQuery.of(context).size.width * 0.80,
       child: Drawer(
+        backgroundColor: Colors.grey.shade300,
         child: Padding(
           padding: const EdgeInsets.all(10),
           child: Column(
@@ -63,33 +63,21 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                 height: 30,
               ),
               const SizedBox(height: 30),
-              GestureDetector(
-                onTap: () {
-                  Get.to(ProfileScreen());
-                },
-                child: Row(
-                  children: [
-                    const CircleAvatar(
-                      radius: 35,
-                    ),
-                    const SizedBox(width: 10),
-                    Column(
-                      children: [
-                        Text(
-                          'Bremi Nivedhaa',
-                          style: TextStyle(fontSize: 25),
-                        ),
-                        Text(
-                          '6382136965',
-                          style: TextStyle(fontSize: 20),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(),
-              const SizedBox(height: 30),
+              Align(alignment:Alignment.topLeft,child: Image.asset('assets/icons/logo.png',width: 150,)),
+              const SizedBox(height: 10),
+              const Divider(thickness: 2,),
+              MenuItems(
+                  title: 'Profile',
+                  icon: Icons.person,
+                  onTap: () {
+                    setState(() {
+                      activePage0 = true;
+                    });
+                    Get.to(ProfileScreen());
+                  },
+                  color: activePage0 ? blueGreen : Colors.black,
+                  size: 23),
+               Divider(color: blueGreen,),
               MenuItems(
                   title: 'Book Your Ride',
                   icon: Icons.drive_eta,
@@ -100,7 +88,8 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                     Get.to(HomeScreen());
                   },
                   color: activePage1 ? blueGreen : Colors.black,
-                  size: 20),
+                  size: 23),
+               Divider(color: blueGreen),
               MenuItems(
                   title: 'Booking History',
                   icon: Icons.history_toggle_off,
@@ -111,7 +100,8 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                     Get.to(BookingHistoryScreen());
                   },
                   color: activePage2 ? blueGreen : Colors.black,
-                  size: 20),
+                  size: 23),
+               Divider(color: blueGreen),
               MenuItems(
                   title: 'Notifications & Offers',
                   icon: Icons.notification_important,
@@ -122,7 +112,8 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                     Get.to(const NotificationOfferScreen());
                   },
                   color: activePage3 ? blueGreen : Colors.black,
-                  size: 20),
+                  size: 23),
+               Divider(color: blueGreen),
               MenuItems(
                   title: 'Payment Method',
                   icon: Icons.payment,
@@ -133,7 +124,8 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                     Get.to(const PaymentMethodScreen());
                   },
                   color: activePage4 ? blueGreen : Colors.black,
-                  size: 20),
+                  size: 23),
+               Divider(color: blueGreen),
               MenuItems(
                   title: 'Transaction History',
                   icon: Icons.history,
@@ -144,7 +136,8 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                     Get.to(const TransactionHistoryScreen());
                   },
                   color: activePage5 ? blueGreen : Colors.black,
-                  size: 20),
+                  size: 23),
+               Divider(color: blueGreen),
               MenuItems(
                   title: 'Terms and Conditions',
                   icon: Icons.description,
@@ -155,7 +148,8 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                     Get.to(const TermsAndConditionsScreen());
                   },
                   color: activePage6 ? blueGreen : Colors.black,
-                  size: 20),
+                  size: 23),
+               Divider(color: blueGreen),
               MenuItems(
                   title: 'Customer Care',
                   icon: Icons.help_outline_rounded,
@@ -166,7 +160,8 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                     Get.to(const ServiceScreen());
                   },
                   color: activePage7 ? blueGreen : Colors.black,
-                  size: 20),
+                  size: 23),
+               Divider(color: blueGreen),
               MenuItems(
                   title: 'Logout',
                   icon: Icons.logout,
@@ -174,7 +169,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                     Get.offAll(LoginScreen());
                   },
                   color: Colors.black,
-                  size: 20),
+                  size: 23),
             ],
           ),
         ),
